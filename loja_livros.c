@@ -65,7 +65,7 @@ int main()
                 printf("\nEncerrando...\n");
                 break;
             default:
-                printf("\nOpÃ§Ã£o Invalida\n");
+                printf("\nOpção Invalida\n");
         }
     }
     return 0;
@@ -103,7 +103,7 @@ int quantidadeRegistros(FILE *arquivo, char nome[]){
     arquivo = fopen(nome, "r");
     
     if(arquivo != NULL){ 
-    	// Garantindo que o  fscanf capture 7 campos, formaï¿½ï¿½o de uma linha/registro
+    	// Garantindo que o  fscanf capture 7 campos, formacao de uma linha/registro
         while(fscanf(arquivo, " %49[^;];%49[^;];%49[^;];%49[^;];%d;%f;%d", // utilizando RegEX para sequencia de caracter e eleminar ";"
         titulo, autor, categoria, editora, &lancamento, &preco, &id) == 7
         ) quant++;
@@ -141,20 +141,20 @@ int evitarDuplicata(FILE *arquivo, char nome[] ,Livro livros_estoque[], char tit
 }
 
 void inserirRegistro(FILE *arquivo, char nome[], Livro livros_estoque[]){
-	int indx = 0; // Definindo 0 para o indice que ira controlar as posicoes do meu vetor
-    if(arquivo == NULL){ // Caso o arquivo nao exista: crie
-        arquivo = fopen(nome, "w");
-    }
-    else { // Caso o arquivo exista: abra em modo "append" - evitando sobrescrever
-        arquivo = fopen(nome, "a"); 
-    }
+	    int indx = 0; // Definindo 0 para o indice que ira controlar as posicoes do meu vetor
+    // if(arquivo == NULL){ // Caso o arquivo nao exista: crie
+    //     arquivo = fopen(nome, "w");
+    // }
+    // else { // Caso o arquivo exista: abra em modo "append" - evitando sobrescrever
+    //     arquivo = fopen(nome, "a"); 
+    // }
         indx = quantidadeRegistros(arquivo, nome); // Retornando para o indice a quantidade de elementos, ao qual sera o indice da proxima insercaoo!
-
+        
         printf("\nIndice %d\n", indx); // print de debug
         
         // While "TRUE"
         while(1){
-        	
+        	arquivo = fopen(nome, "a"); // Se o arquivo existir abra, se nao crie -- Nao ira sobrescrever!
         	// Capturando dados via teclado do usuario e setando no meu vetor da struct Livro
             printf("\nInforme o nome do livro:\n");
             scanf("%s", &livros_estoque[indx].titulo);
@@ -171,10 +171,18 @@ void inserirRegistro(FILE *arquivo, char nome[], Livro livros_estoque[]){
             scanf("%s", &livros_estoque[indx].editora);
             
             printf("\nInforme o ano de lancamento do livro:\n");
-            scanf("%d", &livros_estoque[indx].lancamento);
+            if(scanf("%d", &livros_estoque[indx].lancamento) == 1 && !(livros_estoque[indx].lancamento > 0 && livros_estoque[indx].lancamento < 2027) ){
+                printf("\nData de Lancamento Invalida...\n");
+                fclose(arquivo);
+                continue;
+            } 
             
             printf("\nInforme o preco do livro:\n");
-            scanf("%f", &livros_estoque[indx].preco);
+            if(scanf("%f", &livros_estoque[indx].preco) == 1 && !(livros_estoque[indx].preco > 0) ){
+                printf("\nPreco Invalido...\n");
+                fclose(arquivo);
+                continue;
+            }
             
             // Geracao de Ids automaticos, reaproveitando funcao
 			if(indx == 0) livros_estoque[indx].id = 1;
@@ -190,13 +198,14 @@ void inserirRegistro(FILE *arquivo, char nome[], Livro livros_estoque[]){
             livros_estoque[indx].preco,
             livros_estoque[indx].id
             );
+            fclose(arquivo);
+            
             
             // Loop de escolha --> Continuar cadastrando livros ou nao
             int escolha = 1;
-            printf("\nDeseja inserir um novo livro? 1. Sim  | 0. NÃ£o\n");
+            printf("\nDeseja inserir um novo livro? 1. Sim  | 0. Não\n");
             scanf("%d", &escolha);
             if(escolha == 0) {
-                fclose(arquivo);
                 break; // Forcando parada do Loop
             }
             
@@ -204,7 +213,7 @@ void inserirRegistro(FILE *arquivo, char nome[], Livro livros_estoque[]){
         }
 }
 
-// FunÃ§Ã£o de buscar items dentro do registro
+// Função de buscar items dentro do registro
 void buscarRegistro(char nome[], char termo[]){
     FILE *arquivo = fopen(nome, "r");
     if(arquivo == NULL){
@@ -245,22 +254,22 @@ void buscarRegistro(char nome[], char termo[]){
 // deletando os registros
 void deletarRegistro(char nome[], char termo[]){
     int certeza = 1;
-    printf("\nTem certeza que quer apagar um livro do registro? 1. Sim | 0. NÃ£o\n");
+    printf("\nTem certeza que quer apagar um livro do registro? 1. Sim | 0. Não\n");
     scanf("%d", &certeza);
         if (certeza != 1)
         {
-            printf("\nOperaÃ§Ã£o cancelada\n");
+            printf("\nOperação cancelada\n");
             return;
         }
     
     FILE *arquivo = fopen(nome, "r"); // Abrindo o arquivo original em modo de leitura
-    if(arquivo == NULL){ // Caso o arquivo original nÃ£o exista, da erro
+    if(arquivo == NULL){ // Caso o arquivo original não exista, da erro
         printf("\nImpossivel ler o arquivo\n");
         return;
     }
     FILE *temp = fopen("temp.txt", "w"); // Criando um arquivo temporario para garantir backup
     if(temp == NULL){
-        fclose(arquivo); // Caso o arquivo temporario nÃ£o abra, fecha o arquivo original
+        fclose(arquivo); // Caso o arquivo temporario não abra, fecha o arquivo original
         return;
     }
 
@@ -325,17 +334,17 @@ void editarRegistro(char nome[], char termo[]){
 
         if(strcmp(copia, termo) == 0){ // Procurando no registro exatamante o livro correto
             encontrou = 1;
-            // pegando as informaÃ§Ãµes novas do livro
+            // pegando as informações novas do livro
             printf("\nNovo titulo:\n");    scanf(" %49[^\n]", titulo);
             printf("\nNovo autor:\n");     scanf(" %49[^\n]", autor);
             printf("\nNova categoria:\n"); scanf(" %49[^\n]", categoria);
             printf("\nNova editora:\n");   scanf(" %49[^\n]", editora);
             printf("\nNovo ano:\n");       scanf("%d", &lancamento);
             printf("\nNovo preco:\n");     scanf("%f", &preco);
-            // id nÃ£o foi tocado ent continua o mesmo
+            // id não foi tocado ent continua o mesmo
         }
 
-        fprintf(temp, "%s;%s;%s;%s;%d;%.2f;%d\n", // alterando no registro temporario as informaÃ§Ãµes do livro em si
+        fprintf(temp, "%s;%s;%s;%s;%d;%.2f;%d\n", // alterando no registro temporario as informações do livro em si
                 titulo, autor, categoria, editora, lancamento, preco, id);
     }
 
@@ -345,7 +354,7 @@ void editarRegistro(char nome[], char termo[]){
     if(encontrou){
         remove(nome);                    
         rename("temp.txt", nome);       
-        printf("\nRegistro substituido\n"); // substituindo o registro original pelo temporario para garantir a mudanÃ§a das informaÃ§Ãµes
+        printf("\nRegistro substituido\n"); // substituindo o registro original pelo temporario para garantir a mudança das informações
     } else {
         remove("temp.txt");             
         printf("\nNenhum registro encontrado\n");
